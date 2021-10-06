@@ -17,14 +17,20 @@ type DirectusResponse struct {
 	Errors []DirectusErrors
 }
 
-func BuildRequestUri(c *Config, url string) string {
-	return fmt.Sprintf("%s%s", c.GetEndpoint(), url)
+func BuildRequestUri(c *Config, url string, q *Query) string {
+	uri := fmt.Sprintf("%s%s", c.GetEndpoint(), url)
+
+	if q != nil {
+		uri = uri + "?" + q.ToQueryString()
+	}
+
+	return uri
 }
 
-func NewDirectusRequest(c *Client, url string, method string, requestBody io.Reader) (*http.Response, error) {
+func NewDirectusRequest(c *Client, url string, method string, requestBody io.Reader, q *Query) (*http.Response, error) {
 	client := &http.Client{}
 
-	req, err := http.NewRequest(method, BuildRequestUri(c.Config, url), requestBody)
+	req, err := http.NewRequest(method, BuildRequestUri(c.Config, url, q), requestBody)
 	if err != nil {
 		return nil, fmt.Errorf("creating request error: %v", err)
 	}

@@ -43,7 +43,7 @@ type Collection struct {
 
 func (d *Directus) GetCollections() ([]Collection, error) {
 	var collectionResponse CollectionsResponse
-	resp, err := NewDirectusRequest(d.client, "/collections", "GET", nil)
+	resp, err := NewDirectusRequest(d.client, "/collections", "GET", nil, nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("collections request error: %v", err)
@@ -58,7 +58,7 @@ func (d *Directus) GetCollections() ([]Collection, error) {
 
 func (d *Directus) GetCollection(collectionName string) (*Collection, error) {
 	var collectionResponse CollectionResponse
-	resp, err := NewDirectusRequest(d.client, fmt.Sprintf("/collections/%s", collectionName), "GET", nil)
+	resp, err := NewDirectusRequest(d.client, fmt.Sprintf("/collections/%s", collectionName), "GET", nil, nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("collection request error: %v", err)

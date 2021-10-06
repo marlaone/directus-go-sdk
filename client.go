@@ -45,7 +45,7 @@ func (c *Client) Login(email, password string) error {
 		return fmt.Errorf("parsing login body error: %v", err)
 	}
 
-	resp, err := NewDirectusRequest(c, "/auth/login", "POST", bytes.NewBuffer(loginBody))
+	resp, err := NewDirectusRequest(c, "/auth/login", "POST", bytes.NewBuffer(loginBody), nil)
 
 	if err != nil {
 		return fmt.Errorf("login request error: %v", err)

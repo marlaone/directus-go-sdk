@@ -36,7 +36,7 @@ func (d *Directus) GetItems(collectionName string, query *Query) ([]Item, error)
 }
 
 func (d *Directus) GetItemsWithDecoder(collectionName string, query *Query) (*json.Decoder, io.ReadCloser, error) {
-	resp, err := NewDirectusRequest(d.client, fmt.Sprintf("/items/%s", collectionName), "GET", nil)
+	resp, err := NewDirectusRequest(d.client, fmt.Sprintf("/items/%s", collectionName), "GET", nil, query)
 
 	if err != nil {
 		return nil, nil, fmt.Errorf("items request error: %v", err)
