@@ -7,15 +7,15 @@ import (
 )
 
 func main() {
-	directus := directus.NewDirectus(directus.NewConfigWithEndpoint("http://localhost:8055"))
+	d := directus.NewDirectus(directus.NewConfigWithEndpoint("http://localhost:8055"))
 
-	err := directus.GetClient().Login("jps@marla.one", "2RZ9dfU*YV")
+	err := d.GetClient().Login("jps@marla.one", "2RZ9dfU*YV")
 
 	if err != nil {
 		panic(err)
 	}
 
-	collections, err := directus.GetCollections()
+	collections, err := d.GetCollections()
 
 	if err != nil {
 		panic(err)
@@ -23,7 +23,7 @@ func main() {
 
 	fmt.Println(collections)
 
-	collection, err := directus.GetCollection("directus_activity")
+	collection, err := d.GetCollection("directus_activity")
 
 	if err != nil {
 		panic(err)
@@ -31,7 +31,9 @@ func main() {
 
 	fmt.Println(collection)
 
-	items, err := directus.GetItems("directury_users")
+	q := directus.NewQuery()
+
+	items, err := d.GetItems("test", q)
 
 	if err != nil {
 		panic(err)

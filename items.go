@@ -3,6 +3,7 @@ package directusgosdk
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 )
 
 type ItemsResponse struct {
@@ -12,23 +13,34 @@ type ItemsResponse struct {
 
 type Item interface{}
 
-func (d *Directus) GetItems(collectionName string) ([]Item, error) {
+func (d *Directus) GetItems(collectionName string, query *Query) ([]Item, error) {
 	var itemsResponse ItemsResponse
-	resp, err := NewDirectusRequest(d.client, fmt.Sprintf("/items/%s", collectionName), "GET", nil)
+
+	decoder, body, err := d.GetItemsWithDecoder(collectionName, query)
 
 	if err != nil {
-		return nil, fmt.Errorf("items request error: %v", err)
+		return nil, err
 	}
-	defer resp.Body.Close()
 
-	if err := json.NewDecoder(resp.Body).Decode(&itemsResponse); err != nil {
+	defer body.Close()
+
+	if err := decoder.Decode(&itemsResponse); err != nil {
 		return nil, fmt.Errorf("items response error: %v", err)
 	}
 
 	if err := CheckDirectusErrors(itemsResponse.Errors); err != nil {
 		return nil, fmt.Errorf("items response errors: %v", err)
-
 	}
 
 	return itemsResponse.Data, nil
+}
+
+func (d *Directus) GetItemsWithDecoder(collectionName string, query *Query) (*json.Decoder, io.ReadCloser, error) {
+	resp, err := NewDirectusRequest(d.client, fmt.Sprintf("/items/%s", collectionName), "GET", nil)
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("items request error: %v", err)
+	}
+
+	return json.NewDecoder(resp.Body), resp.Body, nil
 }
