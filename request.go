@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 type DirectusErrors struct {
@@ -35,4 +36,17 @@ func NewDirectusRequest(c *Client, url string, method string, requestBody io.Rea
 	}
 
 	return client.Do(req)
+}
+
+func CheckDirectusErrors(errors []DirectusErrors) error {
+	if len(errors) > 0 {
+		errorMessages := []string{}
+		for _, err := range errors {
+			errorMessages = append(errorMessages, err.Message)
+		}
+
+		return fmt.Errorf(strings.Join(errorMessages, ", "))
+	}
+
+	return nil
 }

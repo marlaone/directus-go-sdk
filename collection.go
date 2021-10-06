@@ -5,8 +5,13 @@ import (
 	"fmt"
 )
 
-type CollectionResponse struct {
+type CollectionsResponse struct {
 	Data   []Collection
+	Errors []*DirectusErrors
+}
+
+type CollectionResponse struct {
+	Data   *Collection
 	Errors []*DirectusErrors
 }
 
@@ -37,7 +42,7 @@ type Collection struct {
 }
 
 func (d *Directus) GetCollections() ([]Collection, error) {
-	var collectionResponse CollectionResponse
+	var collectionResponse CollectionsResponse
 	resp, err := NewDirectusRequest(d.client, "/collections", "GET", nil)
 
 	if err != nil {
@@ -51,6 +56,17 @@ func (d *Directus) GetCollections() ([]Collection, error) {
 	return collectionResponse.Data, nil
 }
 
-func (d *Directus) GetCollection(collectionName string) (Collection, error) {
-	return Collection{}, nil
+func (d *Directus) GetCollection(collectionName string) (*Collection, error) {
+	var collectionResponse CollectionResponse
+	resp, err := NewDirectusRequest(d.client, fmt.Sprintf("/collections/%s", collectionName), "GET", nil)
+
+	if err != nil {
+		return nil, fmt.Errorf("collection request error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if err := json.NewDecoder(resp.Body).Decode(&collectionResponse); err != nil {
+		return nil, fmt.Errorf("collection response error: %v", err)
+	}
+	return collectionResponse.Data, nil
 }

@@ -22,4 +22,20 @@ func main() {
 	}
 
 	fmt.Println(collections)
+
+	collection, err := directus.GetCollection("directus_activity")
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(collection)
+
+	items, err := directus.GetItems("directury_users")
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(items)
 }
