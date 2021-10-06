@@ -1,6 +1,14 @@
 package directusgosdk
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
+
+type CollectionResponse struct {
+	Data   []Collection
+	Errors []*DirectusErrors
+}
 
 type CollectionMeta struct {
 	Collection       string
@@ -28,15 +36,21 @@ type Collection struct {
 	Schema     CollectionSchema
 }
 
-func (d *Directus) GetCollections() ([]*Collection, error) {
-
-	authResponse, err := NewDirectusRequest(d.client, "/collections", "GET", nil)
+func (d *Directus) GetCollections() ([]Collection, error) {
+	var collectionResponse CollectionResponse
+	resp, err := NewDirectusRequest(d.client, "/collections", "GET", nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("collections request error: %v", err)
 	}
+	defer resp.Body.Close()
 
-	fmt.Println(authResponse.Data)
+	if err := json.NewDecoder(resp.Body).Decode(&collectionResponse); err != nil {
+		return nil, fmt.Errorf("directus response error: %v", err)
+	}
+	return collectionResponse.Data, nil
+}
 
-	return []*Collection{}, nil
+func (d *Directus) GetCollection(collectionName string) (Collection, error) {
+	return Collection{}, nil
 }

@@ -1,7 +1,6 @@
 package directusgosdk
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,8 +20,7 @@ func BuildRequestUri(c *Config, url string) string {
 	return fmt.Sprintf("%s%s", c.GetEndpoint(), url)
 }
 
-func NewDirectusRequest(c *Client, url string, method string, requestBody io.Reader) (*DirectusResponse, error) {
-	var directusResponse *DirectusResponse
+func NewDirectusRequest(c *Client, url string, method string, requestBody io.Reader) (*http.Response, error) {
 	client := &http.Client{}
 
 	req, err := http.NewRequest(method, BuildRequestUri(c.Config, url), requestBody)
@@ -36,17 +34,5 @@ func NewDirectusRequest(c *Client, url string, method string, requestBody io.Rea
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.AccessToken))
 	}
 
-	resp, err := client.Do(req)
-
-	if err != nil {
-		return nil, fmt.Errorf("directus request error: %v", err)
-	}
-
-	defer resp.Body.Close()
-
-	if err := json.NewDecoder(resp.Body).Decode(&directusResponse); err != nil {
-		return nil, fmt.Errorf("directus response error: %v", err)
-	}
-
-	return directusResponse, nil
+	return client.Do(req)
 }

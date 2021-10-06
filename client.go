@@ -6,10 +6,15 @@ import (
 	"fmt"
 )
 
+type AuthResponse struct {
+	Data   *AuthInfo         `json:"data"`
+	Errors []*DirectusErrors `json:"errors"`
+}
+
 type AuthInfo struct {
-	AccessToken  string `json:"access_token"`
-	Expires      string `json:"expires"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken  string  `json:"access_token"`
+	Expires      float64 `json:"expires"`
+	RefreshToken string  `json:"refresh_token"`
 }
 
 type Client struct {
@@ -22,13 +27,15 @@ func NewClient(c *Config) *Client {
 		Config: c,
 		AuthInfo: AuthInfo{
 			AccessToken:  "",
-			Expires:      "",
+			Expires:      0,
 			RefreshToken: "",
 		},
 	}
 }
 
 func (c *Client) Login(email, password string) error {
+	var authResponse AuthResponse
+
 	loginBody, err := json.Marshal(map[string]string{
 		"email":    email,
 		"password": password,
@@ -38,24 +45,19 @@ func (c *Client) Login(email, password string) error {
 		return fmt.Errorf("parsing login body error: %v", err)
 	}
 
-	authResponse, err := NewDirectusRequest(c, "/auth/login", "POST", bytes.NewBuffer(loginBody))
+	resp, err := NewDirectusRequest(c, "/auth/login", "POST", bytes.NewBuffer(loginBody))
 
 	if err != nil {
 		return fmt.Errorf("login request error: %v", err)
 	}
+	defer resp.Body.Close()
 
-	authResponseData, ok := authResponse.Data.(map[string]interface{})
-
-	if !ok && authResponse.Errors == nil {
-		return fmt.Errorf("response data invalid type")
+	if err := json.NewDecoder(resp.Body).Decode(&authResponse); err != nil {
+		return fmt.Errorf("login response error: %v", err)
 	}
 
-	if accessToken, ok := authResponseData["access_token"].(string); ok {
-		c.AuthInfo = AuthInfo{
-			AccessToken:  accessToken,
-			Expires:      fmt.Sprintf("%f", authResponseData["expires"].(float64)),
-			RefreshToken: authResponseData["refresh_token"].(string),
-		}
+	if authResponse.Data != nil {
+		c.AuthInfo = *authResponse.Data
 	} else if authResponse.Errors != nil && len(authResponse.Errors) > 0 {
 		return fmt.Errorf("login error: %v", authResponse.Errors)
 	} else {
