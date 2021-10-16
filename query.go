@@ -1,6 +1,7 @@
 package directusgosdk
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -19,6 +20,7 @@ type Query struct {
 	Limit  uint64
 	Offset uint64
 	Page   uint64
+	Deep   string
 }
 
 func NewQuery() *Query {
@@ -67,6 +69,10 @@ func (q *Query) ToQueryString() string {
 		}
 
 		qs = append(qs, strings.Join(fqs, "&"))
+	}
+
+	if q.Deep != "" {
+		qs = append(qs, fmt.Sprintf("deep=%s", q.Deep))
 	}
 
 	return strings.Join(qs, "&")
