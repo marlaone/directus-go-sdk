@@ -20,7 +20,7 @@ type Query struct {
 	Limit  uint64
 	Offset uint64
 	Page   uint64
-	Deep   string
+	Deep   []string
 }
 
 func NewQuery() *Query {
@@ -71,8 +71,10 @@ func (q *Query) ToQueryString() string {
 		qs = append(qs, strings.Join(fqs, "&"))
 	}
 
-	if q.Deep != "" {
-		qs = append(qs, fmt.Sprintf("deep=%s", q.Deep))
+	if len(q.Deep) > 0 {
+		for _, d := range q.Deep {
+			qs = append(qs, fmt.Sprintf("deep%s", d))
+		}
 	}
 
 	return strings.Join(qs, "&")
